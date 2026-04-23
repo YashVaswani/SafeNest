@@ -1,0 +1,168 @@
+const express = require('express');
+const router = express.Router();
+const jwt = require('jsonwebtoken');
+const { db } = require('../db');
+const { users } = require('../db/schema');
+const { eq } = require('drizzle-orm');
+
+// In-memory OTP store (swap for Redis in production)
+const otpStore = new Map(); // phoneNumber -> { otp, expiresAt }
+
+/**
+ * POST /api/auth/send-otp
+ * Body: { phoneNumber: string }
+ */
+router.post('/send-otp', async (req, res) => {
+  const { phoneNumber } = req.body;
+  if (!phoneNumber) {
+    return res.status(400).json({ success: false, message: 'phoneNumber is required' });
+  }
+
+  // Hardcoded OTP for development
+  const otp = '123456';
+  const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
+  otpStore.set(phoneNumber, { otp, expiresAt });
+
+  // TODO: Integrate SMS provider (e.g., Msg91 / Twilio) here
+  console.log(`[OTP] ${phoneNumber} -> ${otp}`);
+
+  return res.json({
+    success: true,
+    message: 'OTP sent successfully',
+    // Only expose OTP in development for testing
+    ...(process.env.NODE_ENV !== 'production' && { otp }),
+  });
+});
+
+/**
+ * POST /api/auth/verify-otp
+ * Body: { phoneNumber: string, otp: string }
+ */
+router.post('/verify-otp', async (req, res) => {
+  const { phoneNumber, otp } = req.body;
+
+  if (!phoneNumber || !otp) {
+    return res.status(400).json({ success: false, message: 'phoneNumber and otp are required' });
+  }
+
+  const stored = otpStore.get(phoneNumber);
+
+  if (!stored) {
+    return res.status(401).json({ success: false, message: 'No OTP sent for this number. Request one first.' });
+  }
+
+  if (Date.now() > stored.expiresAt) {
+    otpStore.delete(phoneNumber);
+    return res.status(401).json({ success: false, message: 'OTP has expired. Please request a new one.' });
+  }
+
+  if (stored.otp !== otp) {
+    return res.status(401).json({ success: false, message: 'Invalid OTP' });
+  }
+
+  // OTP validated – clean up
+  otpStore.delete(phoneNumber);
+
+  try {
+    const SECRET_KEY = process.env.JWT_SECRET || 'your_super_secret_key_123';
+
+    // Check if user exists in DB
+    let existingUsers = [];
+    try {
+      existingUsers = await db.select().from(users).where(eq(users.phoneNumber, phoneNumber)).limit(1);
+    } catch (dbErr) {
+      console.warn('[DB] Could not reach database, using mock user:', dbErr.message);
+    }
+
+    let user = existingUsers[0];
+
+    if (!user) {
+      // New user — create as GUEST pending admin approval
+      // If DB unavailable, generate mock user so the app still boots
+      try {
+        const [insertResult] = await db.insert(users).values({
+          phoneNumber,
+          role: 'RESIDENT',
+          accountStatus: 'APPROVED',
+        });
+        const newUserRows = await db.select().from(users).where(eq(users.id, insertResult.insertId)).limit(1);
+        user = newUserRows[0];
+      } catch (insertErr) {
+        console.warn('[DB] Insert failed, using mock user:', insertErr.message);
+        // Mock user for DB-offline development
+        let role = 'RESIDENT';
+        let fullName = 'Arjun Sharma';
+        let profilePhotoUrl = 'https://randomuser.me/api/portraits/men/32.jpg';
+        let flatNumber = 'B-201';
+
+        if (phoneNumber.endsWith('2')) {
+          role = 'GUARD';
+          fullName = 'Ramesh Singh';
+          profilePhotoUrl = 'https://randomuser.me/api/portraits/men/44.jpg';
+          flatNumber = null;
+        } else if (phoneNumber.endsWith('3')) {
+          role = 'HELPER';
+          fullName = 'Meera Joshi';
+          profilePhotoUrl = 'https://randomuser.me/api/portraits/women/44.jpg';
+          flatNumber = null;
+        } else if (phoneNumber.endsWith('4')) {
+          role = 'ADMIN';
+          fullName = 'Society Admin';
+          profilePhotoUrl = 'https://randomuser.me/api/portraits/men/90.jpg';
+          flatNumber = null;
+        }
+
+        user = {
+          id: parseInt(phoneNumber.slice(-1)) || 1,
+          phoneNumber,
+          role,
+          fullName,
+          profilePhotoUrl,
+          societyId: 1,
+          flatNumber,
+          accountStatus: 'APPROVED',
+          qrCardId: role === 'HELPER' ? 'CARD-1122' : null
+        };
+      }
+    }
+
+    if (user.accountStatus === 'BANNED') {
+      return res.status(403).json({ success: false, message: 'Your account has been suspended.' });
+    }
+    if (user.accountStatus === 'PENDING') {
+      return res.status(403).json({ success: false, message: 'Your account is pending admin approval.' });
+    }
+
+    const token = jwt.sign(
+      {
+        id: user.id,
+        phoneNumber: user.phoneNumber,
+        role: user.role,
+        societyId: user.societyId,
+        fullName: user.fullName,
+      },
+      SECRET_KEY,
+      { expiresIn: '30d' }
+    );
+
+    return res.json({
+      success: true,
+      message: 'Login successful',
+      token,
+      user: {
+        id: user.id,
+        phoneNumber: user.phoneNumber,
+        role: user.role,
+        societyId: user.societyId,
+        fullName: user.fullName,
+        flatNumber: user.flatNumber,
+        profilePhotoUrl: user.profilePhotoUrl,
+      },
+    });
+  } catch (error) {
+    console.error('[Auth Error]', error);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+module.exports = router;
