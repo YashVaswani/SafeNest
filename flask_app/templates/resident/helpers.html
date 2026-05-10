@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Find Helpers — SafeNest{% endblock %}
+{% block page_title %}Trusted Helper Directory{% endblock %}
+{% block content %}
+<div class="card animate-in">
+    <div class="card-body">
+        <div class="row">
+        {% for h in helpers %}
+            <div class="col-md-4 mb-3">
+                <div class="card"><div class="card-body">{{ h.name }} - {{ h.work_type }}</div></div>
+            </div>
+        {% else %}
+            <div class="col-12">No helpers found</div>
+        {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

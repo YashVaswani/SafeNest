@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SafeNest - Privacy-first helper verification platform for gated societies">
+    <title>{% block title %}SafeNest{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+{% if current_user.is_authenticated %}
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-icon">S</div>
+        <div>
+            <h5>SafeNest</h5>
+            <small>Society Security</small>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        {% if current_user.role == 'admin' %}
+        <div class="nav-section">Management</div>
+        <a href="{{ url_for('admin_dashboard') }}" class="nav-link {% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
+            <i class="bi bi-grid-1x2-fill"></i> Dashboard
+        </a>
+        <a href="{{ url_for('admin_helpers') }}" class="nav-link {% if 'helper' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-people-fill"></i> Helpers
+        </a>
+        <a href="{{ url_for('admin_assignments') }}" class="nav-link {% if 'assignment' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-link-45deg"></i> Assignments
+        </a>
+        <div class="nav-section">Monitoring</div>
+        <a href="{{ url_for('admin_logs') }}" class="nav-link {% if request.endpoint == 'admin_logs' %}active{% endif %}">
+            <i class="bi bi-clock-history"></i> Entry Logs
+        </a>
+        <a href="{{ url_for('admin_complaints') }}" class="nav-link {% if 'complaint' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-flag-fill"></i> Complaints
+        </a>
+        <a href="{{ url_for('admin_analytics') }}" class="nav-link {% if 'analytics' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-bar-chart-fill"></i> Analytics
+        </a>
+        {% elif current_user.role == 'resident' %}
+        <div class="nav-section">My Society</div>
+        <a href="{{ url_for('resident_dashboard') }}" class="nav-link {% if request.endpoint == 'resident_dashboard' %}active{% endif %}">
+            <i class="bi bi-house-fill"></i> Dashboard
+        </a>
+        <a href="{{ url_for('resident_helpers') }}" class="nav-link {% if 'helper' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-search"></i> Find Helpers
+        </a>
+        <a href="{{ url_for('resident_complaints') }}" class="nav-link {% if 'complaint' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-flag-fill"></i> Complaints
+        </a>
+        {% elif current_user.role == 'security' %}
+        <div class="nav-section">Security</div>
+        <a href="{{ url_for('security_dashboard') }}" class="nav-link {% if request.endpoint == 'security_dashboard' %}active{% endif %}">
+            <i class="bi bi-shield-fill-check"></i> Dashboard
+        </a>
+        <a href="{{ url_for('security_scanner') }}" class="nav-link {% if 'scanner' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-qr-code-scan"></i> QR Scanner
+        </a>
+        <a href="{{ url_for('security_logs') }}" class="nav-link {% if request.endpoint == 'security_logs' %}active{% endif %}">
+            <i class="bi bi-journal-text"></i> My Logs
+        </a>
+        {% endif %}
+    </nav>
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar">{{ current_user.username[0]|upper }}</div>
+            <div>
+                <div class="user-name">{{ current_user.username }}</div>
+                <div class="user-role">{{ current_user.role }}</div>
+            </div>
+        </div>
+    </div>
+</aside>
+<div class="main-content">
+    <header class="topbar">
+        <div class="d-flex align-items-center gap-3">
+            <button class="btn btn-sm btn-outline-secondary d-lg-none" id="sidebarToggle">
+                <i class="bi bi-list"></i>
+            </button>
+            <span class="page-title">{% block page_title %}Dashboard{% endblock %}</span>
+        </div>
+        <div class="topbar-actions">
+            <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-box-arrow-right"></i> Logout
+            </a>
+        </div>
+    </header>
+    <main class="content-area">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show animate-in" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+</div>
+{% else %}
+{% block public_content %}{% endblock %}
+{% endif %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}My Dashboard — SafeNest{% endblock %}
+{% block page_title %}My Dashboard{% endblock %}
+{% block content %}
+<div class="card animate-in">
+    <div class="card-body">
+        <h5>Assigned Helpers</h5>
+        <ul>
+        {% for a in assignments %}
+            <li>{{ a.helper.name }} - {{ a.helper.work_type }}</li>
+        {% else %}
+            <li>No helpers assigned</li>
+        {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

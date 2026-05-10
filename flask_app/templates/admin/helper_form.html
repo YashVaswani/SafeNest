@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if helper else 'Add' }} Helper — SafeNest{% endblock %}
+{% block page_title %}{{ 'Edit' if helper else 'Add New' }} Helper{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card animate-in">
+            <div class="card-header"><i class="bi bi-person-plus me-2"></i>{{ 'Edit' if helper else 'Register New' }} Helper</div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('admin_edit_helper', helper_id=helper.id) if helper else url_for('admin_add_helper') }}">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Full Name</label>
+                            <input type="text" class="form-control" name="name" value="{{ helper.name if helper else '' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Phone Number</label>
+                            <input type="tel" class="form-control" name="phone" value="{{ helper.phone if helper else '' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Work Type</label>
+                            <select class="form-select d-none" name="_work_type_old" disabled></select>
+                            <input class="form-control" list="work_types" name="work_type" id="work_type_input" value="{{ helper.work_type if helper else '' }}" placeholder="Select or type..." required>
+                            <datalist id="work_types">
+                                {% for t in ['maid','cook','driver','caretaker','other'] %}
+                                <option value="{{ t }}"></option>
+                                {% endfor %}
+                            </datalist>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Verification Status</label>
+                            <select class="form-select" name="verification_status">
+                                {% for s in ['pending','verified','suspended','revoked'] %}
+                                <option value="{{ s }}" {% if helper and helper.verification_status == s %}selected{% endif %}>{{ s|title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Society Notes</label>
+                            <textarea class="form-control" name="society_notes" rows="3">{{ helper.society_notes if helper else '' }}</textarea>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>{{ 'Update' if helper else 'Add' }} Helper</button>
+                        <a href="{{ url_for('admin_helpers') }}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

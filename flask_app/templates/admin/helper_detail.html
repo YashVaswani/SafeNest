@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ helper.name }} — SafeNest{% endblock %}
+{% block page_title %}Helper Profile{% endblock %}
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-4 animate-in delay-1">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                {% if helper.qr_code_path %}
+                <img src="{{ url_for('static', filename=helper.qr_code_path) }}" class="img-fluid mb-3" style="max-width:200px" alt="QR Code">
+                {% endif %}
+                <h5>{{ helper.name }}</h5>
+                <p class="text-muted">{{ helper.work_type|title }}</p>
+                <span class="badge badge-{{ helper.verification_status }}">{{ helper.verification_status|title }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8 animate-in delay-2">
+        <div class="card">
+            <div class="card-body">
+                <h6>Assignments</h6>
+                <ul>
+                {% for a in helper.active_assignments %}
+                    <li>Flat {{ a.flat_number }}</li>
+                {% else %}
+                    <li>No active assignments</li>
+                {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

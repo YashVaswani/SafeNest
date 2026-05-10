@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}My Logs — SafeNest{% endblock %}
+{% block page_title %}My Scan History{% endblock %}
+{% block content %}
+<div class="card animate-in">
+    <div class="card-body">
+        <table class="table">
+            <thead><tr><th>Time</th><th>Helper</th><th>Status</th></tr></thead>
+            <tbody>
+            {% for l in logs %}
+            <tr><td>{{ l.entry_time }}</td><td>{{ l.helper.name }}</td><td>{{ l.status }}</td></tr>
+            {% else %}
+            <tr><td colspan="3">No logs found</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

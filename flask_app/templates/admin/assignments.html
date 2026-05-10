@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Assignments — SafeNest{% endblock %}
+{% block page_title %}Assignments{% endblock %}
+{% block content %}
+<div class="card animate-in">
+    <div class="card-body">
+        <table class="table">
+            <thead><tr><th>Helper</th><th>Flat</th><th>Start Date</th></tr></thead>
+            <tbody>
+            {% for a in assignments %}
+            <tr><td>{{ a.helper.name }}</td><td>{{ a.flat_number }}</td><td>{{ a.start_date }}</td></tr>
+            {% else %}
+            <tr><td colspan="3">No assignments found</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

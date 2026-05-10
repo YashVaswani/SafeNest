@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Complaints — SafeNest{% endblock %}
+{% block page_title %}Complaints{% endblock %}
+{% block content %}
+<div class="card animate-in">
+    <div class="card-body">
+        <table class="table">
+            <thead><tr><th>Resident</th><th>Helper</th><th>Subject</th><th>Status</th></tr></thead>
+            <tbody>
+            {% for c in complaints %}
+            <tr><td>{{ c.resident.user.username }}</td><td>{{ c.helper.name }}</td><td>{{ c.subject }}</td><td>{{ c.status }}</td></tr>
+            {% else %}
+            <tr><td colspan="4">No complaints found</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ helper.name }} — SafeNest{% endblock %}
+{% block page_title %}Helper Profile{% endblock %}
+{% block content %}
+<div class="card animate-in">
+    <div class="card-body">
+        <h5>{{ helper.name }}</h5>
+        <p>{{ helper.work_type }}</p>
+        <hr>
+        <h6>Feedback</h6>
+        {% for f in helper.feedbacks %}
+            <p>{{ f.rating }}/5 - {{ f.comment }}</p>
+        {% else %}
+            <p>No feedback</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

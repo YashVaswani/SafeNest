@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard — SafeNest{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3 animate-in delay-1">
+        <div class="stat-card blue">
+            <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+            <div class="stat-value">{{ total_helpers }}</div>
+            <div class="stat-label">Total Helpers</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3 animate-in delay-2">
+        <div class="stat-card green">
+            <div class="stat-icon"><i class="bi bi-patch-check-fill"></i></div>
+            <div class="stat-value">{{ active_helpers }}</div>
+            <div class="stat-label">Verified & Active</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3 animate-in delay-3">
+        <div class="stat-card amber">
+            <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+            <div class="stat-value">{{ pending_helpers }}</div>
+            <div class="stat-label">Pending Verification</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3 animate-in delay-4">
+        <div class="stat-card purple">
+            <div class="stat-icon"><i class="bi bi-door-open-fill"></i></div>
+            <div class="stat-value">{{ entries_today }}</div>
+            <div class="stat-label">Entries Today</div>
+        </div>
+    </div>
+</div>
+<div class="row g-4">
+    <div class="col-lg-7 animate-in delay-2">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-clock-history me-2"></i>Recent Entry Logs</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead><tr><th>Helper</th><th>Time</th><th>Status</th></tr></thead>
+                    <tbody>
+                    {% for log in recent_logs %}
+                    <tr>
+                        <td class="fw-semibold">{{ log.helper.name }}</td>
+                        <td>{{ log.entry_time.strftime('%d %b, %I:%M %p') }}</td>
+                        <td><span class="badge badge-{{ log.status }}">{{ log.status|title }}</span></td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5 animate-in delay-3">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-pie-chart-fill me-2"></i>Helpers by Type</div>
+            <div class="card-body">
+                <canvas id="helpersByTypeChart" height="220"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% if open_complaints > 0 %}
+<div class="row mt-4">
+    <div class="col-12 animate-in delay-4">
+        <div class="alert alert-warning d-flex align-items-center">
+            <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+            <div>You have <strong>{{ open_complaints }}</strong> open complaint(s). <a href="{{ url_for('admin_complaints') }}">Review now</a></div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+window.chartDataByType = {
+    labels: {{ helpers_by_type|map('first')|list|tojson }},
+    values: {{ helpers_by_type|map('last')|list|tojson }}
+};
+initCharts();
+</script>
+{% endblock %}

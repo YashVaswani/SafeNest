@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Analytics — SafeNest{% endblock %}
+{% block page_title %}Analytics{% endblock %}
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-6 animate-in delay-1">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-graph-up me-2"></i>Entry Trend (Last 14 Days)</div>
+            <div class="card-body"><canvas id="entriesTrendChart" height="200"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-6 animate-in delay-2">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-pie-chart me-2"></i>Helpers by Work Type</div>
+            <div class="card-body"><canvas id="helpersByTypeChart" height="200"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-6 animate-in delay-3">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-bar-chart me-2"></i>Rating Distribution</div>
+            <div class="card-body"><canvas id="ratingDistChart" height="200"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-6 animate-in delay-4">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-circle-half me-2"></i>Helpers by Status</div>
+            <div class="card-body"><canvas id="helpersByStatusChart" height="200"></canvas></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+window.chartDataEntries = {
+    labels: {{ recent_entries|map('first')|list|reverse|list|tojson }},
+    values: {{ recent_entries|map('last')|list|reverse|list|tojson }}
+};
+window.chartDataByType = {
+    labels: {{ helpers_by_type|map('first')|list|tojson }},
+    values: {{ helpers_by_type|map('last')|list|tojson }}
+};
+window.chartDataByStatus = {
+    labels: {{ helpers_by_status|map('first')|list|tojson }},
+    values: {{ helpers_by_status|map('last')|list|tojson }}
+};
+var rd = {};
+{% for r, c in rating_dist %}rd[{{ r }}] = {{ c }};{% endfor %}
+window.chartDataRatings = { values: [rd[1]||0, rd[2]||0, rd[3]||0, rd[4]||0, rd[5]||0] };
+initCharts();
+</script>
+{% endblock %}

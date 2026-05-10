@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Manage Helpers — SafeNest{% endblock %}
+{% block page_title %}Helpers{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h5 class="mb-1 fw-bold">Helper Directory</h5>
+        <p class="text-muted mb-0 small">Manage all registered household helpers</p>
+    </div>
+    <a href="{{ url_for('admin_add_helper') }}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Add Helper</a>
+</div>
+<div class="card animate-in">
+    <div class="card-body">
+        <form method="GET" class="row g-2 mb-3">
+            <div class="col-md-4">
+                <input type="text" class="form-control" name="search" placeholder="Search by name..." value="{{ search }}">
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" name="status">
+                    <option value="">All Status</option>
+                    {% for s in ['pending','verified','suspended','revoked'] %}
+                    <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>{{ s|title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" name="type">
+                    <option value="">All Types</option>
+                    {% for t in ['maid','cook','driver','caretaker','other'] %}
+                    <option value="{{ t }}" {% if type_filter == t %}selected{% endif %}>{{ t|title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-funnel me-1"></i>Filter</button>
+            </div>
+        </form>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead><tr><th>#</th><th>Name</th><th>Phone</th><th>Type</th><th>Status</th><th>Flats</th><th>Actions</th></tr></thead>
+                <tbody>
+                {% for h in helpers %}
+                <tr>
+                    <td>{{ h.id }}</td>
+                    <td class="fw-semibold">{{ h.name }}</td>
+                    <td>{{ h.phone }}</td>
+                    <td><span class="work-badge {{ h.work_type }}">{{ h.work_type|title }}</span></td>
+                    <td><span class="badge badge-{{ h.verification_status }}">{{ h.verification_status|title }}</span></td>
+                    <td>{{ h.active_assignments|map(attribute='flat_number')|join(', ') or '—' }}</td>
+                    <td>
+                        <a href="{{ url_for('admin_helper_detail', helper_id=h.id) }}" class="btn btn-sm btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
+                        <a href="{{ url_for('admin_edit_helper', helper_id=h.id) }}" class="btn btn-sm btn-outline-secondary" title="Edit"><i class="bi bi-pencil"></i></a>
+                        <form method="POST" action="{{ url_for('admin_delete_helper', helper_id=h.id) }}" class="d-inline" onsubmit="return confirm('Delete this helper?')">
+                            <button class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" class="text-center text-muted py-4">No helpers found.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
