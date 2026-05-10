@@ -1,23 +1,21 @@
 # SafeNest
 
-Full-stack application with Flutter mobile client and Express.js backend.
+SafeNest is a Flask-based privacy-first verification platform for gated societies that uses QR-based IDs to manage and verify household helpers. It enables secure entry logging, helper verification, resident feedback, and role-based access for admins, residents, and security guards.
 
 ## Structure
-
 - `/server`: Express.js backend
 - `/mobile`: Flutter mobile application
+- `/flask_app`: Flask web application
 
 ## Setup & Running
 
-### 1. Server
+### 1. Flask Web App
 
 ```bash
-cd server
-npm install
-node index.js
+cd flask_app
+pip install -r requirements.txt
+python app.py
 ```
-
-The server will run on `http://localhost:3000`.
 
 ### 2. Mobile (Flutter)
 
